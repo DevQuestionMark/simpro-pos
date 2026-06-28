@@ -30,6 +30,7 @@ public class MainController {
 
     @FXML private Label     statusLabel;
     @FXML private Label     clockLabel;
+    @FXML private Label     threadBadge;
     @FXML private StackPane centerPane;
 
     private ClockThread clockThread;
@@ -211,6 +212,10 @@ public class MainController {
 
         @Override
         public void run() {
+            // Tampilkan nama thread ini di badge saat mulai berjalan
+            String badge = "● " + Thread.currentThread().getName();
+            Platform.runLater(() -> threadBadge.setText(badge));
+
             while (running) {
                 String time = LocalTime.now().format(TIME_FMT);
                 // Perbarui UI dari FX Application Thread
@@ -222,6 +227,9 @@ public class MainController {
                     break;
                 }
             }
+
+            // Hapus badge saat thread berhenti (logout)
+            Platform.runLater(() -> threadBadge.setText(""));
         }
 
         void stopClock() {
