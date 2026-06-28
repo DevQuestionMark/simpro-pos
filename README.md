@@ -204,7 +204,12 @@ try {
 
 ### 3. Thread
 
-**ClockThread** — subclass `Thread` yang berjalan di background untuk memperbarui jam real-time di status bar setiap detik:
+**ClockThread** — subclass `Thread` yang berjalan di background untuk memperbarui jam real-time di status bar setiap detik. Nama thread ditampilkan sebagai **badge hijau** di status bar selama thread aktif, dan hilang saat logout.
+
+Tampilan di status bar:
+```
+Login sebagai: admin  |  Gudang: 1  |  Terminal: 1    [● clock-thread]  |  08:45:23
+```
 
 ```java
 // MainController.java
@@ -221,6 +226,10 @@ private class ClockThread extends Thread {
 
     @Override
     public void run() {
+        // Tampilkan nama thread di badge UI saat mulai berjalan
+        String badge = "● " + Thread.currentThread().getName();
+        Platform.runLater(() -> threadBadge.setText(badge));
+
         while (running) {
             String time = LocalTime.now().format(TIME_FMT);
             // Update UI harus dilakukan di FX Application Thread
@@ -232,6 +241,9 @@ private class ClockThread extends Thread {
                 break;
             }
         }
+
+        // Hapus badge saat thread berhenti (logout)
+        Platform.runLater(() -> threadBadge.setText(""));
     }
 
     void stopClock() { running = false; interrupt(); }
