@@ -120,3 +120,174 @@ src/main/java/com/questionmark/simpropos/
 - **HikariCP 5** — Connection pool
 - **MySQL Connector/J 8** — Driver database
 - **jBCrypt** — Verifikasi password Laravel bcrypt (`$2y$`)
+
+---
+
+## Elemen Java yang Diimplementasikan
+
+### 1. Stream — InputStream & OutputStream
+
+**InputStream** digunakan saat aplikasi startup untuk membaca file konfigurasi `pos.properties`:
+
+```java
+// AppConfig.java
+Path path = Path.of("pos.properties");
+try (InputStream is = Files.newInputStream(path)) {
+    props.load(is);
+}
+```
+
+**OutputStream** digunakan oleh `ReceiptExporter` untuk menulis struk transaksi ke file `.txt` menggunakan `FileOutputStream` dan `PrintStream`:
+
+```java
+// ReceiptExporter.java
+Path file = dir.resolve(invoiceNum + ".txt");
+
+try (FileOutputStream fos = new FileOutputStream(file.toFile());
+     PrintStream      ps  = new PrintStream(fos, true, StandardCharsets.UTF_8)) {
+
+    ps.println(center("SIMPRO POS", WIDTH));
+    ps.println("No. Invoice  : " + invoiceNum);
+    ps.println("Pelanggan    : " + bpName);
+    // ...
+    ps.printf("%-20s %s%n", "TOTAL", formatRp(grandTotal));
+}
+```
+
+Setiap transaksi berhasil, struk otomatis disimpan ke folder `receipts/INV-YYYY-NNNNN.txt`.
+
+---
+
+### 2. Connection — MySQL via JDBC
+
+Koneksi ke database MySQL dikelola oleh **HikariCP** (connection pool) dan diakses melalui `javax.sql.DataSource`. Setiap repository membuka `Connection` eksplisit dari pool:
+
+```java
+// AppModule.java — konfigurasi pool koneksi
+HikariConfig hc = new HikariConfig();
+hc.setJdbcUrl(config.dbUrl());   // jdbc:mysql://103.103.20.170:3306/simpro
+hc.setUsername(config.dbUser());
+hc.setPassword(config.dbPass());
+hc.setMaximumPoolSize(5);
+return new HikariDataSource(hc);
+```
+
+```java
+// Contoh penggunaan Connection di repository (ItemRepository.java)
+try (Connection conn = dataSource.getConnection();
+     PreparedStatement ps = conn.prepareStatement(SQL_ALL)) {
+    ps.setInt(1, warehouseId);
+    try (ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) list.add(map(rs));
+    }
+}
+```
+
+Transaksi penjualan menggunakan `Connection` dengan `autoCommit=false` untuk memastikan atomicity — jika salah satu langkah gagal, seluruh transaksi di-rollback:
+
+```java
+// SaleService.java — transaksi atomic
+conn.setAutoCommit(false);
+try {
+    // 1. Buat invoice
+    // 2. Tulis baris invoice + kurangi stok
+    // 3. Buat pembayaran
+    // 4. Tandai invoice lunas
+    conn.commit();
+} catch (SQLException e) {
+    conn.rollback();
+    throw e;
+}
+```
+
+---
+
+### 3. Thread
+
+**ClockThread** — subclass `Thread` yang berjalan di background untuk memperbarui jam real-time di status bar setiap detik:
+
+```java
+// MainController.java
+private class ClockThread extends Thread {
+
+    private static final DateTimeFormatter TIME_FMT =
+        DateTimeFormatter.ofPattern("HH:mm:ss");
+    private volatile boolean running = true;
+
+    ClockThread() {
+        setName("clock-thread");
+        setDaemon(true); // mati otomatis saat app ditutup
+    }
+
+    @Override
+    public void run() {
+        while (running) {
+            String time = LocalTime.now().format(TIME_FMT);
+            // Update UI harus dilakukan di FX Application Thread
+            Platform.runLater(() -> clockLabel.setText(time));
+            try {
+                Thread.sleep(1_000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+    }
+
+    void stopClock() { running = false; interrupt(); }
+}
+```
+
+**item-loader-thread** — Thread background untuk memuat daftar item dari database tanpa membekukan UI:
+
+```java
+// CheckoutController.java
+Thread itemLoaderThread = new Thread(() -> {
+    try {
+        List<ItemDto> items = itemRepo.findAll(session.getWarehouseId());
+        // Kembali ke FX Application Thread untuk update UI
+        Platform.runLater(() -> {
+            allItems = items;
+            filterCards("");
+        });
+    } catch (SQLException e) {
+        Platform.runLater(() -> showError("Gagal memuat item: " + e.getMessage()));
+    }
+}, "item-loader-thread");
+itemLoaderThread.setDaemon(true);
+itemLoaderThread.start();
+```
+
+---
+
+### 4. Images — JavaFX ImageView
+
+**Logo aplikasi** ditampilkan di layar login dan top bar menggunakan `ImageView` dengan file PNG yang dibundle dalam JAR:
+
+```xml
+<!-- login.fxml -->
+<ImageView fitHeight="72" preserveRatio="true">
+    <image><Image url="@images/logo.png"/></image>
+</ImageView>
+
+<!-- main.fxml (top bar) -->
+<ImageView fitHeight="30" preserveRatio="true">
+    <image><Image url="@images/logo-light.png"/></image>
+</ImageView>
+```
+
+**Gambar produk** pada setiap kartu item dimuat secara asinkron dari URL storage (`backgroundLoading=true`) sehingga UI tidak terblokir. Jika gambar gagal dimuat, ditampilkan placeholder huruf pertama nama item:
+
+```java
+// CheckoutController.java
+String url = config.storageUrl() + "/" + imgPath;
+Image img = new Image(url, 160, 100, false, true, /* backgroundLoading= */ true);
+ImageView iv = new ImageView(img);
+iv.setFitWidth(160);
+iv.setFitHeight(100);
+
+// Sembunyikan ImageView jika gambar gagal dimuat
+img.errorProperty().addListener((obs, ov, err) -> {
+    if (err) iv.setVisible(false);
+});
+```
