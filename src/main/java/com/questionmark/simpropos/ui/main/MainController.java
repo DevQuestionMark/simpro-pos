@@ -23,11 +23,16 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 public class MainController {
 
     @FXML private Label     statusLabel;
+    @FXML private Label     clockLabel;
     @FXML private StackPane centerPane;
+
+    private ClockThread clockThread;
 
     private final AppSession      session;
     private final Injector        injector;
@@ -48,6 +53,10 @@ public class MainController {
     @FXML
     public void initialize() {
         updateStatusLabel();
+
+        // Start live clock thread
+        clockThread = new ClockThread();
+        clockThread.start();
 
         // Load checkout screen
         try {
@@ -153,6 +162,7 @@ public class MainController {
 
     @FXML
     private void onLogout() throws IOException {
+        clockThread.stopClock();
         session.logout();
         session.clearShift();
         FXMLLoader loader = new FXMLLoader(
@@ -181,5 +191,42 @@ public class MainController {
 
     private static String formatRp(BigDecimal amount) {
         return "Rp " + NUM_FMT.format(amount.setScale(0, RoundingMode.HALF_UP).longValue());
+    }
+
+    // ── ClockThread ────────────────────────────────────────────────────────
+    // Thread yang berjalan di background untuk memperbarui jam real-time
+    // di status bar setiap detik menggunakan Platform.runLater().
+
+    private class ClockThread extends Thread {
+
+        private static final DateTimeFormatter TIME_FMT =
+            DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        private volatile boolean running = true;
+
+        ClockThread() {
+            setName("clock-thread");
+            setDaemon(true); // mati otomatis saat app ditutup
+        }
+
+        @Override
+        public void run() {
+            while (running) {
+                String time = LocalTime.now().format(TIME_FMT);
+                // Perbarui UI dari FX Application Thread
+                Platform.runLater(() -> clockLabel.setText(time));
+                try {
+                    Thread.sleep(1_000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+
+        void stopClock() {
+            running = false;
+            interrupt();
+        }
     }
 }

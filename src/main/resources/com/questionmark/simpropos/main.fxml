@@ -39,9 +39,13 @@
         <HBox style="-fx-background-color: #eceef1; -fx-padding: 6 16;
                      -fx-border-color: #dfe2e6 transparent transparent transparent;
                      -fx-border-width: 1 0 0 0;"
-              alignment="CENTER_LEFT">
+              alignment="CENTER_LEFT" spacing="0">
             <Label fx:id="statusLabel"
-                   style="-fx-font-size: 12; -fx-text-fill: #5b6573;"/>
+                   style="-fx-font-size: 12; -fx-text-fill: #5b6573;"
+                   HBox.hgrow="ALWAYS"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="clockLabel"
+                   style="-fx-font-size: 12; -fx-font-weight: bold; -fx-text-fill: #132744;"/>
         </HBox>
     </bottom>
 

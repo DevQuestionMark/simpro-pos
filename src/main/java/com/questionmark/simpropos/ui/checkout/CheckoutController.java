@@ -11,9 +11,12 @@ import com.questionmark.simpropos.service.SaleService;
 import com.questionmark.simpropos.session.AppSession;
 import com.questionmark.simpropos.ui.customer.CreateCustomerDialog;
 import com.questionmark.simpropos.ui.payment.PaymentDialog;
+import com.questionmark.simpropos.util.ReceiptExporter;
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.Observable;
+import java.io.IOException;
+import java.nio.file.Path;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -97,13 +100,26 @@ public class CheckoutController {
 
         ppnRateLabel.setText("PPN (" + config.ppnRate().stripTrailingZeros().toPlainString() + "%)");
 
-        // Load all items
-        try {
-            allItems = itemRepo.findAll(session.getWarehouseId());
-        } catch (SQLException e) {
-            showError("Gagal memuat item: " + e.getMessage());
-        }
-        filterCards("");
+        // Tampilkan indikator loading sementara item dimuat di background
+        Label loadingLabel = new Label("Memuat item...");
+        loadingLabel.setStyle("-fx-text-fill: #9ca3af; -fx-font-size: 13;");
+        cardsPane.getChildren().add(loadingLabel);
+
+        // ── Background Thread: muat item dari DB agar UI tidak freeze ─────
+        Thread itemLoaderThread = new Thread(() -> {
+            try {
+                List<ItemDto> items = itemRepo.findAll(session.getWarehouseId());
+                // Kembali ke FX Application Thread untuk update UI
+                Platform.runLater(() -> {
+                    allItems = items;
+                    filterCards("");
+                });
+            } catch (SQLException e) {
+                Platform.runLater(() -> showError("Gagal memuat item: " + e.getMessage()));
+            }
+        }, "item-loader-thread");
+        itemLoaderThread.setDaemon(true);
+        itemLoaderThread.start();
 
         // Cart listener → rebuild rows + totals
         cart.addListener((ListChangeListener<CartLine>) c -> {
@@ -380,7 +396,7 @@ public class CheckoutController {
                     snapshot, activeBpId, grandTotal,
                     payment.dbMethod(), remarks,
                     session.getUserId(), session.getWarehouseId());
-                showReceipt(sale, payment, grandTotal);
+                showReceipt(sale, payment, grandTotal, snapshot);
                 cart.clear();
             } catch (java.sql.SQLException e) {
                 new Alert(Alert.AlertType.ERROR,
@@ -393,17 +409,40 @@ public class CheckoutController {
     }
 
     private void showReceipt(SaleService.SaleResult sale,
-                             PaymentResult payment, BigDecimal grandTotal) {
+                             PaymentResult payment, BigDecimal grandTotal,
+                             List<CartLine> lines) {
+        // Hitung komponen untuk ekspor
+        BigDecimal subtotal = lines.stream()
+            .map(CartLine::lineTotal)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal rate = config.ppnRate().divide(BigDecimal.valueOf(100));
+        BigDecimal ppn  = config.ppnInclusive()
+            ? subtotal.multiply(rate).divide(BigDecimal.ONE.add(rate), 2, RoundingMode.HALF_UP)
+            : subtotal.multiply(rate).setScale(2, RoundingMode.HALF_UP);
+
+        // ── OutputStream: ekspor struk ke file TXT ────────────────────────
+        String savedPath = "";
+        try {
+            Path file = ReceiptExporter.export(
+                sale.invoiceDocNum(), sale.paymentDocNum(),
+                activeBpName, payment.displayMethod(),
+                lines, subtotal, ppn, grandTotal,
+                payment.tendered(), payment.change());
+            savedPath = "\n\nStruk disimpan: " + file.toAbsolutePath();
+        } catch (IOException e) {
+            savedPath = "\n(Gagal menyimpan struk: " + e.getMessage() + ")";
+        }
+
         String change = payment.change().compareTo(BigDecimal.ZERO) > 0
             ? "\nKembalian   : " + formatRp(payment.change()) : "";
         String msg = String.format(
             "TRANSAKSI BERHASIL\n\n" +
             "No. Invoice : %s\nNo. Bayar   : %s\n" +
             "Pelanggan   : %s\nMetode      : %s\n" +
-            "Total       : %s\nDiterima    : %s%s",
+            "Total       : %s\nDiterima    : %s%s%s",
             sale.invoiceDocNum(), sale.paymentDocNum(),
             activeBpName, payment.displayMethod(),
-            formatRp(grandTotal), formatRp(payment.tendered()), change);
+            formatRp(grandTotal), formatRp(payment.tendered()), change, savedPath);
 
         Alert receipt = new Alert(Alert.AlertType.INFORMATION, msg);
         receipt.setTitle("Struk");
