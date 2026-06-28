@@ -17,9 +17,9 @@ Buat file `pos.properties` di direktori kerja (folder tempat app dijalankan). Fi
 
 ```properties
 # ── Database ──────────────────────────────────────────────────────────
-db.url=jdbc:mysql://HOST:3306/simpro?serverTimezone=Asia/Jakarta&useSSL=false&allowPublicKeyRetrieval=true
+db.url=jdbc:mysql://103.103.20.170:3306/simpro?serverTimezone=Asia/Jakarta&useSSL=false&allowPublicKeyRetrieval=true
 db.user=simpro
-db.pass=PASSWORD_DB
+db.pass=Qwerty123#
 
 # ── POS identity ──────────────────────────────────────────────────────
 pos.outlet_id=1
@@ -37,26 +37,6 @@ tax.ppn_inclusive=false       # false = eksklusif (ditambah ke subtotal)
                               # true  = inklusif (sudah termasuk di harga)
 ```
 
-### Akses database
-
-MySQL membatasi koneksi berdasarkan IP host. Jalankan perintah berikut di server MySQL sebagai `root` agar app bisa terhubung:
-
-```sql
--- Izinkan dari semua IP (cocok untuk jaringan yang berpindah-pindah)
-CREATE USER IF NOT EXISTS 'simpro'@'%' IDENTIFIED BY 'PASSWORD_DB';
-GRANT ALL PRIVILEGES ON simpro.* TO 'simpro'@'%';
-FLUSH PRIVILEGES;
-```
-
-Atau jika ingin membatasi ke IP tertentu:
-
-```sql
-CREATE USER IF NOT EXISTS 'simpro'@'IP_KAMU' IDENTIFIED BY 'PASSWORD_DB';
-GRANT ALL PRIVILEGES ON simpro.* TO 'simpro'@'IP_KAMU';
-FLUSH PRIVILEGES;
-```
-
-Cek IP publik kamu: `curl ifconfig.me`
 
 ## Menjalankan Aplikasi
 
