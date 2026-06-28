@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.questionmark.simpropos.ui.main.MainController"
+            stylesheets="@theme.css"
+            style="-fx-background-color: #f4f5f7;">
+
+    <!-- Top bar -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="14"
+              style="-fx-background-color: linear-gradient(to right, #132744, #1d3a5f);
+                     -fx-padding: 10 20;
+                     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.18), 8, 0, 0, 2);">
+            <ImageView fitHeight="30" preserveRatio="true">
+                <image><Image url="@images/logo-light.png"/></image>
+            </ImageView>
+            <Label text="Simpro POS"
+                   style="-fx-text-fill: white; -fx-font-size: 16; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button fx:id="closeShiftBtn" text="Tutup Shift"
+                    onAction="#onCloseShift"
+                    styleClass="btn-topbar, btn-topbar-warn"/>
+            <Button text="Logout" onAction="#onLogout"
+                    styleClass="btn-topbar"/>
+        </HBox>
+    </top>
+
+    <!-- Checkout screen loaded programmatically by MainController -->
+    <center>
+        <StackPane fx:id="centerPane"/>
+    </center>
+
+    <!-- Status bar -->
+    <bottom>
+        <HBox style="-fx-background-color: #eceef1; -fx-padding: 6 16;
+                     -fx-border-color: #dfe2e6 transparent transparent transparent;
+                     -fx-border-width: 1 0 0 0;"
+              alignment="CENTER_LEFT">
+            <Label fx:id="statusLabel"
+                   style="-fx-font-size: 12; -fx-text-fill: #5b6573;"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

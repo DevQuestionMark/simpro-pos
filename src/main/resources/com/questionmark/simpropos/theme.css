@@ -1,0 +1,149 @@
+/* =====================================================================
+   Simpro POS — brand theme
+   Palette derived from the Simpro logo:
+     red    #E11C24 / #A8161F (gradient) / #E5252B (accent)
+     navy   #132744
+   ===================================================================== */
+
+.root {
+    -brand-red:        #E11C24;
+    -brand-red-dark:   #A8161F;
+    -brand-red-bright: #E5252B;
+    -brand-navy:       #132744;
+    -brand-navy-2:     #1d3a5f;
+
+    -surface:          #ffffff;
+    -bg:               #f4f5f7;
+    -line:             #e3e6ea;
+    -muted:            #6b7280;
+
+    -fx-font-family: "Inter", "Segoe UI", "Roboto", sans-serif;
+    -fx-background-color: -bg;
+}
+
+/* ---- generic text ------------------------------------------------- */
+.heading       { -fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: -brand-navy; }
+.subtle        { -fx-font-size: 13px; -fx-text-fill: -muted; }
+.field-label   { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: -brand-navy; }
+.section-label { -fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #94a3b8; }
+.error-text    { -fx-text-fill: -brand-red; -fx-font-size: 12px; }
+
+/* ---- text inputs -------------------------------------------------- */
+.text-field, .password-field, .text-area {
+    -fx-font-size: 13px;
+    -fx-background-color: -surface;
+    -fx-background-radius: 8;
+    -fx-border-color: -line;
+    -fx-border-radius: 8;
+    -fx-border-width: 1.2;
+    -fx-padding: 9 12;
+    -fx-prompt-text-fill: #9aa3af;
+}
+.text-area { -fx-padding: 0; }
+.text-area .content { -fx-background-radius: 8; }
+.text-field:focused, .password-field:focused, .text-area:focused {
+    -fx-border-color: -brand-red;
+    -fx-effect: dropshadow(gaussian, rgba(225,28,36,0.18), 6, 0, 0, 0);
+}
+
+/* ---- buttons ------------------------------------------------------ */
+.button { -fx-cursor: hand; -fx-font-size: 13px; -fx-background-radius: 8; }
+
+/* primary call-to-action — brand red */
+.btn-primary {
+    -fx-background-color: linear-gradient(to bottom, -brand-red-bright, -brand-red-dark);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 11 18;
+    -fx-effect: dropshadow(gaussian, rgba(168,22,31,0.35), 8, 0, 0, 2);
+}
+.btn-primary:hover  { -fx-background-color: linear-gradient(to bottom, #ef2f37, -brand-red); }
+.btn-primary:pressed{ -fx-background-color: -brand-red-dark; }
+
+/* big pay button */
+.btn-pay {
+    -fx-background-color: linear-gradient(to bottom, -brand-red-bright, -brand-red-dark);
+    -fx-text-fill: white;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-padding: 15 0;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(168,22,31,0.45), 12, 0, 0, 3);
+}
+.btn-pay:hover    { -fx-background-color: linear-gradient(to bottom, #ef2f37, -brand-red); }
+.btn-pay:disabled { -fx-background-color: #64748b; -fx-effect: null; -fx-opacity: 0.55; }
+
+/* navy/secondary button */
+.btn-navy {
+    -fx-background-color: -brand-navy;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 11 18;
+}
+.btn-navy:hover { -fx-background-color: -brand-navy-2; }
+
+/* small chip button (on dark panel) */
+.btn-chip {
+    -fx-background-color: -brand-red;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 5 10;
+    -fx-background-radius: 6;
+}
+.btn-chip:hover { -fx-background-color: -brand-red-bright; }
+
+/* ghost button on dark panel */
+.btn-ghost-light {
+    -fx-background-color: transparent;
+    -fx-text-fill: #cbd5e1;
+    -fx-font-size: 11px;
+    -fx-border-color: #3b4d66;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 5 10;
+}
+.btn-ghost-light:hover { -fx-border-color: #64748b; -fx-text-fill: white; }
+
+/* ghost button on the top bar */
+.btn-topbar {
+    -fx-background-color: transparent;
+    -fx-text-fill: #d6dde6;
+    -fx-border-color: rgba(255,255,255,0.25);
+    -fx-border-radius: 7;
+    -fx-background-radius: 7;
+    -fx-padding: 7 15;
+}
+.btn-topbar:hover { -fx-background-color: rgba(255,255,255,0.10); -fx-text-fill: white; }
+.btn-topbar-warn { -fx-text-fill: #fbbf24; }
+.btn-topbar-warn:hover { -fx-background-color: rgba(251,191,36,0.14); }
+
+/* ---- scrollpane / scrollbar -------------------------------------- */
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: transparent; }
+.scroll-bar:vertical { -fx-pref-width: 9; -fx-background-color: transparent; }
+.scroll-bar:horizontal { -fx-pref-height: 9; -fx-background-color: transparent; }
+.scroll-bar .thumb {
+    -fx-background-color: #c2c9d2;
+    -fx-background-radius: 6;
+}
+.scroll-bar .thumb:hover { -fx-background-color: #9aa3af; }
+.scroll-bar .increment-button, .scroll-bar .decrement-button,
+.scroll-bar .increment-arrow,  .scroll-bar .decrement-arrow { -fx-pref-height: 0; -fx-pref-width: 0; }
+
+/* ---- item card ---------------------------------------------------- */
+.item-card {
+    -fx-background-color: -surface;
+    -fx-background-radius: 12;
+    -fx-border-color: -line;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(19,39,68,0.06), 6, 0, 0, 2);
+}
+.item-card:hover {
+    -fx-border-color: -brand-red;
+    -fx-effect: dropshadow(gaussian, rgba(225,28,36,0.22), 12, 0, 0, 4);
+    -fx-cursor: hand;
+}
+
+/* ---- separators on dark panel ------------------------------------ */
+.dark-sep .line { -fx-border-color: #2b3f57; }

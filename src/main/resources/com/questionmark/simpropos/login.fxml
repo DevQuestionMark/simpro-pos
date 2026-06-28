@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/21"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="com.questionmark.simpropos.ui.login.LoginController"
+           stylesheets="@theme.css"
+           style="-fx-background-color: linear-gradient(to bottom right, #132744, #0c1a30);">
+
+    <VBox alignment="CENTER" spacing="16" maxWidth="360"
+          style="-fx-background-color: white;
+                 -fx-background-radius: 14;
+                 -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.35), 28, 0, 0, 10);
+                 -fx-padding: 44 40 40 40;">
+
+        <ImageView fitHeight="72" preserveRatio="true">
+            <image><Image url="@images/logo.png"/></image>
+        </ImageView>
+
+        <VBox alignment="CENTER" spacing="2">
+            <Label text="Simpro POS" styleClass="heading"/>
+            <Label text="Masuk dengan akun ERP Anda" styleClass="subtle"/>
+        </VBox>
+
+        <VBox spacing="6" maxWidth="Infinity">
+            <Label text="Username" styleClass="field-label"/>
+            <TextField fx:id="usernameField" promptText="Username"/>
+        </VBox>
+
+        <VBox spacing="6" maxWidth="Infinity">
+            <Label text="Password" styleClass="field-label"/>
+            <PasswordField fx:id="passwordField" promptText="Password"/>
+        </VBox>
+
+        <Label fx:id="errorLabel" wrapText="true" visible="false" managed="false"
+               styleClass="error-text" maxWidth="Infinity"/>
+
+        <Button fx:id="loginButton" text="Masuk"
+                maxWidth="Infinity" defaultButton="true"
+                onAction="#onLogin"
+                styleClass="btn-primary"/>
+    </VBox>
+</StackPane>

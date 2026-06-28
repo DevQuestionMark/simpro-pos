@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<!--
+  Left  : search field + scrollable item card grid (FlowPane)
+  Right : cart rows with qty controls + customer + totals + pay button
+-->
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.questionmark.simpropos.ui.checkout.CheckoutController"
+      stylesheets="@theme.css"
+      maxWidth="Infinity" maxHeight="Infinity" fillHeight="true"
+      style="-fx-background-color: #f4f5f7;">
+
+    <!-- ── LEFT: search + item cards ─────────────────────────────── -->
+    <VBox HBox.hgrow="ALWAYS" spacing="10"
+          style="-fx-padding: 14;">
+
+        <TextField fx:id="searchField"
+                   promptText="Cari atau scan barcode item..."
+                   style="-fx-font-size: 14; -fx-padding: 11 16;"/>
+
+        <Label fx:id="errorLabel" visible="false" managed="false"
+               styleClass="error-text"/>
+
+        <ScrollPane VBox.vgrow="ALWAYS" fitToWidth="true" hbarPolicy="NEVER">
+            <FlowPane fx:id="cardsPane" hgap="12" vgap="12"
+                      style="-fx-padding: 2 2 8 2;"/>
+        </ScrollPane>
+
+    </VBox>
+
+    <!-- ── RIGHT: cart + totals ──────────────────────────────────── -->
+    <VBox minWidth="300" maxWidth="320" spacing="9"
+          style="-fx-background-color: linear-gradient(to bottom, #132744, #0f2038);
+                 -fx-padding: 16;">
+
+        <!-- Customer -->
+        <Label text="PELANGGAN" styleClass="section-label"/>
+        <HBox alignment="CENTER_LEFT" spacing="6">
+            <Label fx:id="customerLabel" text="Walk-in"
+                   style="-fx-text-fill: white; -fx-font-size: 13; -fx-font-weight: bold;"
+                   HBox.hgrow="ALWAYS"/>
+            <Button text="+ Baru" onAction="#onNewCustomer" styleClass="btn-chip"/>
+            <Button text="Ganti" onAction="#onChangeBp" styleClass="btn-ghost-light"/>
+        </HBox>
+
+        <Separator styleClass="dark-sep"/>
+
+        <!-- Cart header -->
+        <HBox alignment="CENTER_LEFT">
+            <Label text="KERANJANG" styleClass="section-label" HBox.hgrow="ALWAYS"/>
+            <Button text="Bersihkan" onAction="#onClearCart"
+                    style="-fx-background-color: transparent; -fx-text-fill: #94a3b8;
+                           -fx-font-size: 11; -fx-cursor: hand; -fx-padding: 2 6;"/>
+        </HBox>
+
+        <!-- Cart rows (scrollable) -->
+        <ScrollPane fx:id="cartScroll" VBox.vgrow="ALWAYS"
+                    fitToWidth="true" hbarPolicy="NEVER">
+            <VBox fx:id="cartItemsPane" spacing="5"/>
+        </ScrollPane>
+
+        <Separator styleClass="dark-sep"/>
+
+        <!-- Subtotal -->
+        <HBox>
+            <Label text="Subtotal" style="-fx-text-fill: #94a3b8; -fx-font-size: 12;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="subtotalLabel" text="Rp 0"
+                   style="-fx-text-fill: #e2e8f0; -fx-font-size: 12;"/>
+        </HBox>
+
+        <!-- PPN -->
+        <HBox>
+            <Label fx:id="ppnRateLabel" text="PPN (11%)"
+                   style="-fx-text-fill: #94a3b8; -fx-font-size: 12;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="ppnLabel" text="Rp 0"
+                   style="-fx-text-fill: #e2e8f0; -fx-font-size: 12;"/>
+        </HBox>
+
+        <Separator styleClass="dark-sep"/>
+
+        <!-- Grand total -->
+        <HBox alignment="CENTER_LEFT">
+            <Label text="TOTAL"
+                   style="-fx-text-fill: white; -fx-font-size: 14; -fx-font-weight: bold;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="grandTotalLabel" text="Rp 0"
+                   style="-fx-text-fill: #ff6b70; -fx-font-size: 22; -fx-font-weight: bold;"/>
+        </HBox>
+
+        <!-- Pay button -->
+        <Button fx:id="payButton" text="BAYAR" onAction="#onPay"
+                maxWidth="Infinity" disable="true"
+                styleClass="btn-pay"/>
+    </VBox>
+
+</HBox>
